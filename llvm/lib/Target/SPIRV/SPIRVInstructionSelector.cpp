@@ -274,6 +274,9 @@ private:
   bool selectExtInst(Register ResVReg, const SPIRVType *ResType,
                      MachineInstr &I, const ExtInstList &ExtInsts) const;
 
+  bool selectStrictFREM(Register ResVReg, const SPIRVType *ResType,
+                        MachineInstr &I) const;
+
   bool selectLog10(Register ResVReg, const SPIRVType *ResType,
                    MachineInstr &I) const;
 
@@ -689,6 +692,9 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
   case TargetOpcode::G_FMA:
     return selectExtInst(ResVReg, ResType, I, CL::fma, GL::Fma);
 
+  case TargetOpcode::G_STRICT_FREM:
+    return selectStrictFREM(ResVReg, ResType, I);
+
   case TargetOpcode::G_STRICT_FLDEXP:
     return selectExtInst(ResVReg, ResType, I, CL::ldexp);
 
@@ -1022,6 +1028,48 @@ bool SPIRVInstructionSelector::selectExtInst(Register ResVReg,
     }
   }
   return false;
+}
+
+bool SPIRVInstructionSelector::selectStrictFREM(Register ResVReg,
+                                                const SPIRVType *ResType,
+                                                MachineInstr &I) const {
+  assert(I.getNumOperands() == 3 &&
+         "StrictFRem should have 2 operands and result");
+  assert(I.getOperand(1).isReg() && I.getOperand(2).isReg() &&
+         "Operands should be registers");
+
+  MachineBasicBlock &BB = *I.getParent();
+  Register LHS = I.getOperand(1).getReg();
+  Register RHS = I.getOperand(2).getReg();
+
+  // Verify input types
+  SPIRVType *LHSType = GR.getSPIRVTypeForVReg(LHS);
+  SPIRVType *RHSType = GR.getSPIRVTypeForVReg(RHS);
+
+  if (!LHSType || !RHSType)
+    report_fatal_error("Input Type could not be determined.");
+
+  if (!GR.isScalarOrVectorOfType(LHS, SPIRV::OpTypeFloat) ||
+      !GR.isScalarOrVectorOfType(RHS, SPIRV::OpTypeFloat)) {
+    report_fatal_error("StrictFRem requires floating-point operands");
+  }
+
+  unsigned Opcode;
+  if (LHSType->getOpcode() == SPIRV::OpTypeFloat) {
+    Opcode = SPIRV::OpFRemS; // Scalar operation
+  } else if (LHSType->getOpcode() == SPIRV::OpTypeVector) {
+    Opcode = SPIRV::OpFRemV; // Vector operation
+  } else {
+    report_fatal_error("Unsupported type for StrictFRem operation");
+  }
+
+  // Create the appropriate FRem instruction
+  return BuildMI(BB, I, I.getDebugLoc(), TII.get(Opcode))
+      .addDef(ResVReg)
+      .addUse(GR.getSPIRVTypeID(ResType))
+      .addUse(LHS)
+      .addUse(RHS)
+      .constrainAllUses(TII, TRI, RBI);
 }
 
 bool SPIRVInstructionSelector::selectOpWithSrcs(Register ResVReg,
