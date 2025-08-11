@@ -2435,6 +2435,8 @@ bool SPIRVEmitIntrinsics::runOnFunction(Function &Func) {
 
     if (auto *FPI = dyn_cast<ConstrainedFPIntrinsic>(I))
       useRoundingMode(FPI, B);
+    if (auto *FRemI = dyn_cast<ConstrainedFPIntrinsic>(I))
+      useRoundingMode(FRemI, B);
   }
 
   // Pass backward: use instructions results to specify/update/cast operands

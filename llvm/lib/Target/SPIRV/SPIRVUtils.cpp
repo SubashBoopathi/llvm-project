@@ -936,7 +936,7 @@ const std::set<unsigned> &getTypeFoldingSupportedOpcodes() {
     TargetOpcode::G_SREM,
     TargetOpcode::G_UREM,
     TargetOpcode::G_FREM,
-    //TargetOpcode::G_STRICT_FREM,
+    TargetOpcode::G_STRICT_FREM,
     TargetOpcode::G_FNEG,
     TargetOpcode::G_CONSTANT,
     TargetOpcode::G_FCONSTANT,
