@@ -335,21 +335,6 @@ static void lowerFunnelShifts(IntrinsicInst *FSHIntrinsic) {
   FSHIntrinsic->setCalledFunction(FSHFunc);
 }
 
-static void lowerConstrainedFPRemIntrinsic(
-    ConstrainedFPIntrinsic *ConstrainedRemIntrinsic,
-    SmallVector<Instruction *> &EraseFromParent) {
-  if (!ConstrainedRemIntrinsic)
-    return;
-  Value *LHS = ConstrainedRemIntrinsic->getArgOperand(0);
-  Value *RHS = ConstrainedRemIntrinsic->getArgOperand(1);
-  IRBuilder<> Builder(ConstrainedRemIntrinsic);
-  Value *FRem = Builder.CreateFRem(LHS, RHS);
-  ConstrainedRemIntrinsic->replaceAllUsesWith(FRem);
-  EraseFromParent.push_back(
-      dyn_cast<Instruction>(ConstrainedRemIntrinsic));
-}
-
-
 static void lowerExpectAssume(IntrinsicInst *II) {
   // If we cannot use the SPV_KHR_expect_assume extension, then we need to
   // ignore the intrinsic and move on. It should be removed later on by LLVM.
@@ -394,7 +379,6 @@ static bool toSpvOverloadedIntrinsic(IntrinsicInst *II, Intrinsic::ID NewID,
 bool SPIRVPrepareFunctions::substituteIntrinsicCalls(Function *F) {
   bool Changed = false;
   const SPIRVSubtarget &STI = TM.getSubtarget<SPIRVSubtarget>(*F);
-  SmallVector<Instruction *> EraseFromParent;
   for (BasicBlock &BB : *F) {
     for (Instruction &I : BB) {
       auto Call = dyn_cast<CallInst>(&I);
@@ -436,16 +420,8 @@ bool SPIRVPrepareFunctions::substituteIntrinsicCalls(Function *F) {
         lowerPtrAnnotation(II);
         Changed = true;
         break;
-      case Intrinsic::experimental_constrained_frem:
-        lowerConstrainedFPRemIntrinsic(dyn_cast<ConstrainedFPIntrinsic>(II),
-                                       EraseFromParent);
-        Changed = true;
-        break;
       }
     }
-  }
-  for (auto *I : EraseFromParent) {
-    I->eraseFromParent();
   }
   return Changed;
 }
