@@ -693,20 +693,27 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
     return selectExtInst(ResVReg, ResType, I, CL::ldexp);
 
   case TargetOpcode::G_FPOW:
+  case TargetOpcode::G_STRICT_FPOW:
     return selectExtInst(ResVReg, ResType, I, CL::pow, GL::Pow);
   case TargetOpcode::G_FPOWI:
+  case TargetOpcode::G_STRICT_FPOWI:
     return selectExtInst(ResVReg, ResType, I, CL::pown);
 
   case TargetOpcode::G_FEXP:
+  case TargetOpcode::G_STRICT_FEXP:
     return selectExtInst(ResVReg, ResType, I, CL::exp, GL::Exp);
   case TargetOpcode::G_FEXP2:
+  case TargetOpcode::G_STRICT_FEXP2:
     return selectExtInst(ResVReg, ResType, I, CL::exp2, GL::Exp2);
 
   case TargetOpcode::G_FLOG:
+  case TargetOpcode::G_STRICT_FLOG:
     return selectExtInst(ResVReg, ResType, I, CL::log, GL::Log);
   case TargetOpcode::G_FLOG2:
+  case TargetOpcode::G_STRICT_FLOG2:
     return selectExtInst(ResVReg, ResType, I, CL::log2, GL::Log2);
   case TargetOpcode::G_FLOG10:
+  case TargetOpcode::G_STRICT_FLOG10:
     return selectLog10(ResVReg, ResType, I);
 
   case TargetOpcode::G_FABS:
@@ -715,9 +722,13 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
     return selectExtInst(ResVReg, ResType, I, CL::s_abs, GL::SAbs);
 
   case TargetOpcode::G_FMINNUM:
+  case TargetOpcode::G_STRICT_FMINNUM:
+  case TargetOpcode::G_STRICT_FMINIMUM:
   case TargetOpcode::G_FMINIMUM:
     return selectExtInst(ResVReg, ResType, I, CL::fmin, GL::NMin);
   case TargetOpcode::G_FMAXNUM:
+  case TargetOpcode::G_STRICT_FMAXIMUM:
+  case TargetOpcode::G_STRICT_FMAXNUM:
   case TargetOpcode::G_FMAXIMUM:
     return selectExtInst(ResVReg, ResType, I, CL::fmax, GL::NMax);
 
@@ -725,29 +736,41 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
     return selectExtInst(ResVReg, ResType, I, CL::copysign);
 
   case TargetOpcode::G_FCEIL:
+  case TargetOpcode::G_STRICT_FCEIL:
     return selectExtInst(ResVReg, ResType, I, CL::ceil, GL::Ceil);
   case TargetOpcode::G_FFLOOR:
+  case TargetOpcode::G_STRICT_FFLOOR:
     return selectExtInst(ResVReg, ResType, I, CL::floor, GL::Floor);
 
   case TargetOpcode::G_FCOS:
+  case TargetOpcode::G_STRICT_FCOS:
     return selectExtInst(ResVReg, ResType, I, CL::cos, GL::Cos);
   case TargetOpcode::G_FSIN:
+  case TargetOpcode::G_STRICT_FSIN:
     return selectExtInst(ResVReg, ResType, I, CL::sin, GL::Sin);
   case TargetOpcode::G_FTAN:
+  case TargetOpcode::G_STRICT_FTAN:
     return selectExtInst(ResVReg, ResType, I, CL::tan, GL::Tan);
   case TargetOpcode::G_FACOS:
+  case TargetOpcode::G_STRICT_FACOS:
     return selectExtInst(ResVReg, ResType, I, CL::acos, GL::Acos);
   case TargetOpcode::G_FASIN:
+  case TargetOpcode::G_STRICT_FASIN:
     return selectExtInst(ResVReg, ResType, I, CL::asin, GL::Asin);
   case TargetOpcode::G_FATAN:
+  case TargetOpcode::G_STRICT_FATAN:
     return selectExtInst(ResVReg, ResType, I, CL::atan, GL::Atan);
   case TargetOpcode::G_FATAN2:
+  case TargetOpcode::G_STRICT_FATAN2:
     return selectExtInst(ResVReg, ResType, I, CL::atan2, GL::Atan2);
   case TargetOpcode::G_FCOSH:
+  case TargetOpcode::G_STRICT_FCOSH:
     return selectExtInst(ResVReg, ResType, I, CL::cosh, GL::Cosh);
   case TargetOpcode::G_FSINH:
+  case TargetOpcode::G_STRICT_FSINH:
     return selectExtInst(ResVReg, ResType, I, CL::sinh, GL::Sinh);
   case TargetOpcode::G_FTANH:
+  case TargetOpcode::G_STRICT_FTANH:
     return selectExtInst(ResVReg, ResType, I, CL::tanh, GL::Tanh);
 
   case TargetOpcode::G_STRICT_FSQRT:
@@ -762,13 +785,18 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
     return selectExtInst(ResVReg, ResType, I, CL::clz);
 
   case TargetOpcode::G_INTRINSIC_ROUND:
+  case TargetOpcode::G_STRICT_INTRINSIC_ROUND:
     return selectExtInst(ResVReg, ResType, I, CL::round, GL::Round);
   case TargetOpcode::G_INTRINSIC_ROUNDEVEN:
+  case TargetOpcode::G_STRICT_INTRINSIC_ROUNDEVEN:
     return selectExtInst(ResVReg, ResType, I, CL::rint, GL::RoundEven);
   case TargetOpcode::G_INTRINSIC_TRUNC:
+  case TargetOpcode::G_STRICT_INTRINSIC_TRUNC:
     return selectExtInst(ResVReg, ResType, I, CL::trunc, GL::Trunc);
   case TargetOpcode::G_FRINT:
+  case TargetOpcode::G_STRICT_FRINT:
   case TargetOpcode::G_FNEARBYINT:
+  case TargetOpcode::G_STRICT_FNEARBYINT:
     return selectExtInst(ResVReg, ResType, I, CL::rint, GL::RoundEven);
 
   case TargetOpcode::G_SMULH:

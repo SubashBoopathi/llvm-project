@@ -1716,6 +1716,34 @@ def G_STRICT_FREM : ConstrainedInstruction<G_FREM>;
 def G_STRICT_FMA : ConstrainedInstruction<G_FMA>;
 def G_STRICT_FSQRT : ConstrainedInstruction<G_FSQRT>;
 def G_STRICT_FLDEXP : ConstrainedInstruction<G_FLDEXP>;
+def G_STRICT_FPOW : ConstrainedInstruction<G_FPOW>;
+def G_STRICT_FPOWI: ConstrainedInstruction<G_FPOWI>;
+def G_STRICT_FSIN: ConstrainedInstruction<G_FSIN>;
+def G_STRICT_FCOS: ConstrainedInstruction<G_FCOS>;
+def G_STRICT_FTAN: ConstrainedInstruction<G_FTAN>;
+def G_STRICT_FASIN: ConstrainedInstruction<G_FSIN>;
+def G_STRICT_FACOS: ConstrainedInstruction<G_FACOS>;
+def G_STRICT_FATAN: ConstrainedInstruction<G_FATAN>;
+def G_STRICT_FATAN2: ConstrainedInstruction<G_FATAN2>;
+def G_STRICT_FSINH: ConstrainedInstruction<G_FSINH>;
+def G_STRICT_FCOSH: ConstrainedInstruction<G_FCOSH>;
+def G_STRICT_FTANH: ConstrainedInstruction<G_FTANH>;
+def G_STRICT_FEXP: ConstrainedInstruction<G_FEXP>;
+def G_STRICT_FEXP2: ConstrainedInstruction<G_FEXP2>;
+def G_STRICT_FLOG: ConstrainedInstruction<G_FLOG>;
+def G_STRICT_FLOG10: ConstrainedInstruction<G_FLOG10>;
+def G_STRICT_FLOG2: ConstrainedInstruction<G_FLOG2>;
+def G_STRICT_FRINT: ConstrainedInstruction<G_FRINT>;
+def G_STRICT_FNEARBYINT: ConstrainedInstruction<G_FNEARBYINT>;
+def G_STRICT_FMAXNUM: ConstrainedInstruction<G_FMAXNUM>;
+def G_STRICT_FMINNUM: ConstrainedInstruction<G_FMINNUM>;
+def G_STRICT_INTRINSIC_TRUNC: ConstrainedInstruction<G_INTRINSIC_TRUNC>;
+def G_STRICT_FMAXIMUM: ConstrainedInstruction<G_FMAXIMUM>;
+def G_STRICT_FMINIMUM: ConstrainedInstruction<G_FMINIMUM>;
+def G_STRICT_FCEIL: ConstrainedInstruction<G_FCEIL>;
+def G_STRICT_FFLOOR: ConstrainedInstruction<G_FFLOOR>;
+def G_STRICT_INTRINSIC_ROUND: ConstrainedInstruction<G_INTRINSIC_ROUND>;
+def G_STRICT_INTRINSIC_ROUNDEVEN: ConstrainedInstruction<G_INTRINSIC_ROUNDEVEN>;
 
 //------------------------------------------------------------------------------
 // Memory intrinsics

@@ -2061,6 +2061,62 @@ static unsigned getConstrainedOpcode(Intrinsic::ID ID) {
     return TargetOpcode::G_STRICT_FSQRT;
   case Intrinsic::experimental_constrained_ldexp:
     return TargetOpcode::G_STRICT_FLDEXP;
+  case Intrinsic::experimental_constrained_pow:
+    return TargetOpcode::G_STRICT_FPOW;
+  case Intrinsic::experimental_constrained_powi:
+    return TargetOpcode::G_STRICT_FPOWI;
+  case Intrinsic::experimental_constrained_cos:
+    return TargetOpcode::G_STRICT_FCOS;
+  case Intrinsic::experimental_constrained_tan:
+    return TargetOpcode::G_STRICT_FTAN;
+  case Intrinsic::experimental_constrained_sin:
+    return TargetOpcode::G_STRICT_FSIN;
+  case Intrinsic::experimental_constrained_asin:
+    return TargetOpcode::G_STRICT_FASIN;
+  case Intrinsic::experimental_constrained_acos:
+    return TargetOpcode::G_STRICT_FACOS;
+  case Intrinsic::experimental_constrained_atan:
+    return TargetOpcode::G_STRICT_FATAN;
+  case Intrinsic::experimental_constrained_atan2:
+    return TargetOpcode::G_STRICT_FATAN2;
+  case Intrinsic::experimental_constrained_sinh:
+    return TargetOpcode::G_STRICT_FSINH;
+  case Intrinsic::experimental_constrained_cosh:
+    return TargetOpcode::G_STRICT_FCOSH;
+  case Intrinsic::experimental_constrained_tanh:
+    return TargetOpcode::G_STRICT_FTANH;
+  case Intrinsic::experimental_constrained_exp:
+    return TargetOpcode::G_STRICT_FEXP;
+  case Intrinsic::experimental_constrained_exp2:
+    return TargetOpcode::G_STRICT_FEXP2;
+  case Intrinsic::experimental_constrained_log:
+    return TargetOpcode::G_STRICT_FLOG;
+  case Intrinsic::experimental_constrained_log10:
+    return TargetOpcode::G_STRICT_FLOG10;
+  case Intrinsic::experimental_constrained_log2:
+    return TargetOpcode::G_STRICT_FLOG2;
+  case Intrinsic::experimental_constrained_rint:
+    return TargetOpcode::G_STRICT_FRINT;
+  case Intrinsic::experimental_constrained_nearbyint:
+    return TargetOpcode::G_STRICT_FNEARBYINT;
+  case Intrinsic::experimental_constrained_maxnum:
+    return TargetOpcode::G_STRICT_FMAXNUM;
+  case Intrinsic::experimental_constrained_minnum:
+    return TargetOpcode::G_STRICT_FMINNUM;
+  case Intrinsic::experimental_constrained_ceil:
+    return TargetOpcode::G_STRICT_FCEIL;
+  case Intrinsic::experimental_constrained_floor:
+    return TargetOpcode::G_STRICT_FFLOOR;
+  case Intrinsic::experimental_constrained_maximum:
+    return TargetOpcode::G_STRICT_FMAXIMUM;
+  case Intrinsic::experimental_constrained_minimum:
+    return TargetOpcode::G_STRICT_FMINIMUM;
+  case Intrinsic::experimental_constrained_trunc:
+    return TargetOpcode::G_STRICT_INTRINSIC_TRUNC;
+  case Intrinsic::experimental_constrained_round:
+    return TargetOpcode::G_STRICT_INTRINSIC_ROUND;
+  case Intrinsic::experimental_constrained_roundeven:
+    return TargetOpcode::G_STRICT_INTRINSIC_ROUNDEVEN;
   default:
     return 0;
   }
