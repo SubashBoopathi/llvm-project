@@ -226,6 +226,8 @@ private:
                   bool IsSigned, unsigned Opcode) const;
   bool selectExt(Register ResVReg, const SPIRVType *ResType, MachineInstr &I,
                  bool IsSigned) const;
+  bool selectIntrinsicLrint(Register ResVReg, const SPIRVType *ResType,
+                            MachineInstr &I) const;
 
   bool selectTrunc(Register ResVReg, const SPIRVType *ResType,
                    MachineInstr &I) const;
@@ -763,6 +765,11 @@ bool SPIRVInstructionSelector::spvSelect(Register ResVReg,
 
   case TargetOpcode::G_INTRINSIC_ROUND:
     return selectExtInst(ResVReg, ResType, I, CL::round, GL::Round);
+  case TargetOpcode::G_INTRINSIC_LRINT:
+  case TargetOpcode::G_INTRINSIC_LLRINT:
+  case TargetOpcode::G_STRICT_INTRINSIC_LRINT:
+  case TargetOpcode::G_STRICT_INTRINSIC_LLRINT:
+    return selectIntrinsicLrint(ResVReg, ResType, I);
   case TargetOpcode::G_INTRINSIC_ROUNDEVEN:
     return selectExtInst(ResVReg, ResType, I, CL::rint, GL::RoundEven);
   case TargetOpcode::G_INTRINSIC_TRUNC:
@@ -2573,6 +2580,25 @@ bool SPIRVInstructionSelector::selectSelect(Register ResVReg,
       .addUse(OneReg)
       .addUse(ZeroReg)
       .constrainAllUses(TII, TRI, RBI);
+}
+
+bool SPIRVInstructionSelector::selectIntrinsicLrint(Register ResVReg,
+                                                    const SPIRVType *ResType,
+                                                    MachineInstr &I) const {
+  Register SrcReg = I.getOperand(1).getReg();
+  const SPIRVType *SrcTy = GR.getSPIRVTypeForVReg(SrcReg);
+  MachineRegisterInfo &MRI = I.getMF()->getRegInfo();
+  Register RoundReg = MRI.createVirtualRegister(&SPIRV::IDRegClass);
+  if (!selectExtInst(RoundReg, SrcTy, I, CL::rint, GL::RoundEven))
+    return false;
+  if (!BuildMI(*I.getParent(), I, I.getDebugLoc(),
+               TII.get(SPIRV::OpConvertFToS))
+           .addDef(ResVReg)
+           .addUse(GR.getSPIRVTypeID(ResType))
+           .addUse(RoundReg)
+           .constrainAllUses(TII, TRI, RBI))
+    return false;
+  return true;
 }
 
 bool SPIRVInstructionSelector::selectIToF(Register ResVReg,

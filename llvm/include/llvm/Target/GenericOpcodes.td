@@ -1716,6 +1716,8 @@ def G_STRICT_FREM : ConstrainedInstruction<G_FREM>;
 def G_STRICT_FMA : ConstrainedInstruction<G_FMA>;
 def G_STRICT_FSQRT : ConstrainedInstruction<G_FSQRT>;
 def G_STRICT_FLDEXP : ConstrainedInstruction<G_FLDEXP>;
+def G_STRICT_INTRINSIC_LRINT: ConstrainedInstruction<G_INTRINSIC_LRINT>;
+def G_STRICT_INTRINSIC_LLRINT: ConstrainedInstruction<G_INTRINSIC_LLRINT>;
 
 //------------------------------------------------------------------------------
 // Memory intrinsics
