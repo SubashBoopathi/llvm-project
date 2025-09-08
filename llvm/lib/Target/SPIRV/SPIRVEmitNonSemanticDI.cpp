@@ -48,6 +48,19 @@ INITIALIZE_PASS(SPIRVEmitNonSemanticDI, DEBUG_TYPE,
 
 char SPIRVEmitNonSemanticDI::ID = 0;
 
+enum DebugOperation {
+  Deref = 0,
+  Plus = 1,
+  Minus = 2,
+  PlusUconst = 3,
+  BitPiece = 4,
+  Swap = 5,
+  Xderef = 6,
+  StackValue = 7,
+  Constu = 8,
+  Fragment = 9
+};
+
 MachineFunctionPass *
 llvm::createSPIRVEmitNonSemanticDIPass(SPIRVTargetMachine *TM) {
   return new SPIRVEmitNonSemanticDI(TM);
@@ -96,6 +109,35 @@ bool SPIRVEmitNonSemanticDI::emitGlobalDI(MachineFunction &MF) {
   int64_t DebugInfoVersion = 0;
   SmallPtrSet<DIBasicType *, 12> BasicTypes;
   SmallPtrSet<DIDerivedType *, 12> PointerDerivedTypes;
+  SmallVector<const DIExpression *, 10> ExprList;
+  SmallSet<const DIExpression *, 10> SeenExprs;
+
+  struct DebugOpKey {
+    DebugOperation Kind;
+    SmallVector<uint64_t, 2> Operands;
+
+    bool operator==(const DebugOpKey &Other) const {
+      if (Kind != Other.Kind || Operands.size() != Other.Operands.size())
+        return false;
+      for (size_t i = 0; i < Operands.size(); ++i)
+        if (Operands[i] != Other.Operands[i])
+          return false;
+      return true;
+    }
+
+    bool operator<(const DebugOpKey &Other) const {
+      if (Kind != Other.Kind)
+        return Kind < Other.Kind;
+      if (Operands.size() != Other.Operands.size())
+        return Operands.size() < Other.Operands.size();
+      for (size_t i = 0; i < Operands.size(); ++i) {
+        if (Operands[i] != Other.Operands[i])
+          return Operands[i] < Other.Operands[i];
+      }
+      return false;
+    }
+  };
+
   // Searching through the Module metadata to find nescessary
   // information like DwarfVersion or SourceLanguage
   {
@@ -154,6 +196,11 @@ bool SPIRVEmitNonSemanticDI::emitGlobalDI(MachineFunction &MF) {
                   BasicTypes.insert(BT);
               }
             }
+            if (const DIExpression *Expr = DVR.getExpression()) {
+              if (SeenExprs.insert(Expr).second) {
+                ExprList.push_back(Expr);
+              }
+            }
           }
         }
       }
@@ -189,7 +236,7 @@ bool SPIRVEmitNonSemanticDI::emitGlobalDI(MachineFunction &MF) {
 
     const auto EmitDIInstruction =
         [&](SPIRV::NonSemanticExtInst::NonSemanticExtInst Inst,
-            std::initializer_list<Register> Registers) {
+            ArrayRef <Register> Registers) {
           const Register InstReg =
               MRI.createVirtualRegister(&SPIRV::IDRegClass);
           MRI.setType(InstReg, LLT::scalar(32));
@@ -341,6 +388,92 @@ bool SPIRVEmitNonSemanticDI::emitGlobalDI(MachineFunction &MF) {
               {DebugInfoNoneReg, StorageClassReg, I32ZeroReg});
         }
       }
+    }
+
+    for (const DIExpression *Expr : ExprList) {
+      SmallVector<Register, 10> OpRegs;
+      SmallSet<DebugOpKey, 10> SeenOperations;
+      for (unsigned i = 0; i < Expr->getNumElements();) {
+        uint64_t Op = Expr->getElement(i++);
+        DebugOperation Kind;
+        DebugOpKey CurrentOp;
+        bool ValidOp = false;
+        switch (Op) {
+        case dwarf::DW_OP_deref:
+          Kind = DebugOperation::Deref;
+          ValidOp = true;
+          break;
+        case dwarf::DW_OP_plus:
+          Kind = DebugOperation::Plus;
+          ValidOp = true;
+          break;
+        case dwarf::DW_OP_minus:
+          Kind = DebugOperation::Minus;
+          ValidOp = true;
+          break;
+        case dwarf::DW_OP_plus_uconst:
+          Kind = DebugOperation::PlusUconst;
+          ValidOp = true;
+          if (i < Expr->getNumElements())
+            CurrentOp.Operands.push_back(Expr->getElement(i++));
+          break;
+        case dwarf::DW_OP_bit_piece:
+          Kind = DebugOperation::BitPiece;
+          ValidOp = true;
+          if (i + 1 < Expr->getNumElements()) {
+            CurrentOp.Operands.push_back(Expr->getElement(i++));
+            CurrentOp.Operands.push_back(Expr->getElement(i++));
+          }
+          break;
+        case dwarf::DW_OP_swap:
+          Kind = DebugOperation::Swap;
+          ValidOp = true;
+          break;
+        case dwarf::DW_OP_xderef:
+          Kind = DebugOperation::Xderef;
+          ValidOp = true;
+          break;
+        case dwarf::DW_OP_stack_value:
+          Kind = DebugOperation::StackValue;
+          ValidOp = true;
+          break;
+        case dwarf::DW_OP_constu:
+          Kind = DebugOperation::Constu;
+          ValidOp = true;
+          if (i < Expr->getNumElements())
+            CurrentOp.Operands.push_back(Expr->getElement(i++));
+          break;
+        case dwarf::DW_OP_LLVM_fragment:
+          Kind = DebugOperation::Fragment;
+          ValidOp = true;
+          if (i + 1 < Expr->getNumElements()) {
+            CurrentOp.Operands.push_back(Expr->getElement(i++));
+            CurrentOp.Operands.push_back(Expr->getElement(i++));
+          }
+          break;
+        default:
+          continue; // Skip unsupported operations
+        }
+        if (ValidOp) {
+          CurrentOp.Kind = Kind;
+          if (SeenOperations.insert(CurrentOp).second) {
+            const Register OpKindReg =
+                GR->buildConstantInt(static_cast<uint64_t>(CurrentOp.Kind),
+                                     MIRBuilder, I32Ty, false);
+            SmallVector<Register, 4> Args = {OpKindReg};
+            for (const uint64_t Operand : CurrentOp.Operands) {
+              const Register OperandReg =
+                  GR->buildConstantInt(Operand, MIRBuilder, I32Ty, false);
+              Args.push_back(OperandReg);
+            }
+            const Register DebugOpReg = EmitDIInstruction(
+                SPIRV::NonSemanticExtInst::DebugOperation, Args);
+            OpRegs.push_back(DebugOpReg);
+          }
+        }
+      }
+      [[maybe_unused]] const Register DebugExpressionReg =
+          EmitDIInstruction(SPIRV::NonSemanticExtInst::DebugExpression, OpRegs);
     }
   }
   return true;
