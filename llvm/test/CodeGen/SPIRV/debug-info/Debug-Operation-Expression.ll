@@ -90,6 +90,7 @@ entry:
   call void @llvm.dbg.value(metadata i32 %local, metadata !14, metadata !DIExpression(DW_OP_constu, 20, DW_OP_swap)), !dbg !15
   call void @llvm.dbg.value(metadata i32 %local, metadata !14, metadata !DIExpression(DW_OP_plus_uconst, 8, DW_OP_stack_value)), !dbg !15
   call void @llvm.dbg.value(metadata i32 %local, metadata !14, metadata !DIExpression(DW_OP_LLVM_fragment, 4, 12)), !dbg !15
+  call void @llvm.dbg.value(metadata i32 %local, metadata !14, metadata !DIExpression(DW_OP_bit_piece, 4, 12)), !dbg !15
   ret void
 }
 
